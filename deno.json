@@ -1,0 +1,6 @@
+{
+  "main": "main.js",
+  "imports": {
+    "discord.js": "npm:discord.js@^14.18.0"
+  }
+}

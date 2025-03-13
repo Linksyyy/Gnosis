@@ -1,7 +1,7 @@
-const { TOKEN, CLIENT_ID } = require('./config.json')
-const path = require('node:path')
-const fs = require('node:fs')
-const { REST, Routes } = require('discord.js')
+import { TOKEN, CLIENT_ID } from './config.json'
+import path from 'node:path'
+import fs from 'node:fs'
+import { REST, Routes } from 'discord.js'
 
 const commands = []
 const foldersPath = path.join(__dirname, 'commands', 'utilities')
@@ -9,7 +9,7 @@ const commandsPaths = fs.readdirSync(foldersPath)
 
 for (file of commandsPaths) {
     filePath = path.join(foldersPath, file)
-    command = require(filePath)
+    command = await import(filePath)
     commands.push(command.data)
 }
 

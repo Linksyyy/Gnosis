@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js')
+import { SlashCommandBuilder } from 'discord.js';
 
-module.exports = {
+export default {
     data: new SlashCommandBuilder()
         .setName('reload')
         .setDescription('Recarrega os comandos')
@@ -9,9 +9,11 @@ module.exports = {
                 .setDescription('O comando pra recarregar')
                 .setRequired(true)),
     async execute(msg) {
+        console.log(msg.user.username == DEV_ID)
+
         const commandName = msg.options.getString('command', true).toLowerCase()
         const command = msg.client.commands.get(commandName)
-        console.log(command)
+
         if (!command) { return msg.reply('nenhum comando encontrado') }
         delete require.cache[require.resolve(`./${command.data.name}.js`)];
 

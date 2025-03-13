@@ -1,6 +1,6 @@
-const { Events, Collection } = require('discord.js')
+import { Events, Collection } from 'discord.js'
 
-module.exports = {
+export default{
     when: Events.InteractionCreate,
     async execute(msg) {
         const command = msg.client.commands.get(msg.commandName);
