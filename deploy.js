@@ -17,7 +17,7 @@ const rest = new REST().setToken(TOKEN)
 
 async function deploy() {
     console.log(`Carregando ${commands.length} Slash commands.`);
-
+    
     const data = await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
 
     console.log(`Carregado ${data.length} Slash commands com sucesso.`);
