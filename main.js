@@ -1,6 +1,6 @@
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
-import fs from 'node:fs';
 import path from 'node:path';
+import { getDirs } from './functions.js';
 import config from './config.json' with {type: 'json'};
 const { TOKEN } = config;
 
@@ -10,7 +10,7 @@ client.commands = new Collection()
 client.cooldowns = new Collection()
 
 const commandsPath = path.join(import.meta.dirname, 'commands', 'utilities');
-const commandsFiles = fs.readdirSync(commandsPath);
+const commandsFiles = await getDirs(commandsPath);
 
 //register commands in cache
 for (const file of commandsFiles) {
@@ -25,7 +25,7 @@ for (const file of commandsFiles) {
 }
 
 const eventsPath = path.join(import.meta.dirname, 'events');
-const eventsFiles = fs.readdirSync(eventsPath);
+const eventsFiles = await getDirs(eventsPath);
 //show events in console
 for (const file of eventsFiles) {
 	const filePath = path.join(eventsPath, file)

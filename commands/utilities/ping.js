@@ -5,7 +5,6 @@ export default {
         .setName('ping')
         .setDescription('pong'),
     async execute(msg) {
-        console.log(msg.user)
-        await msg.reply('pong krl')
+        await msg.reply('pong')
     },
 };
