@@ -1,10 +1,10 @@
-import { Events, Collection } from 'discord.js'
+import { Events } from "discord.js";
 
-export default{
-    when: Events.InteractionCreate,
-    async execute(msg) {
-        const command = msg.client.commands.get(msg.commandName);
-        /*
+export default {
+  when: Events.InteractionCreate,
+  async execute(msg: any) {
+    const command = msg.client.commands.get(msg.commandName);
+    /*
         const { cooldowns } = msg.client
 
         if (!cooldowns.hasAny(command.data.name)) {
@@ -26,6 +26,6 @@ export default{
         timestamps.set(interaction.user.id, now);
         setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
         */
-        await command.execute(msg);
-    }
-}
+    await command.execute(msg);
+  },
+};
