@@ -15,7 +15,7 @@ client.commands = new Collection();
 const commandsPath = path.join(_dirname, "commands", "utilities");
 const commandsFiles = await getDirs(commandsPath);
 
-//register commands in cache
+//command handler
 for (const file of commandsFiles) {
   const filePath = path.join(commandsPath, file);
   const { default: command } = await import(filePath);
@@ -32,7 +32,7 @@ for (const file of commandsFiles) {
 const eventsPath = path.join(_dirname, "events");
 const eventsFiles = await getDirs(eventsPath);
 
-//show events in console
+//events handler
 for (const file of eventsFiles) {
   const filePath = path.join(eventsPath, file);
   const { default: event } = await import(filePath);

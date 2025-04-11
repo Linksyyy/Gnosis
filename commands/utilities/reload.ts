@@ -5,7 +5,8 @@ export default {
     .setName("reload")
     .setDescription("Recarrega os comandos")
     .addStringOption((option) =>
-      option.setName("command")
+      option
+        .setName("command")
         .setDescription("O comando pra recarregar")
         .setRequired(true)
     ),

@@ -1,4 +1,15 @@
-//import process from 'node:process'
-import { dirname } from "https://deno.land/std/path/mod.ts";
+import { GoogleGenAI } from "@google/genai";
+const ai = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_KEY") });
 
-console.log(dirname(import.meta.url));
+async function geminiAsk(input: string): Promise<string | undefined> {
+  const response = await ai.models.generateContent({
+    model: "gemini-1.5-pro",
+    contents: input,
+  });
+  return response.text;
+}
+while (true) {
+  const input: string = prompt("> ") as string;
+  const output = await geminiAsk(input) 
+  console.log(output);
+}
