@@ -1,6 +1,7 @@
-import path from "node:path";
-import { _dirname, getDirs } from "./stuffs.ts";
 import { REST, Routes } from "discord.js";
+import path from "node:path";
+import _dirname from "./util/_dirname.ts";
+import getDirs from "./util/getDirs.ts";
 
 const token: string | undefined = Deno.env.get("TOKEN");
 const clientId: string = Deno.env.get("CLIENT_ID") as string;
