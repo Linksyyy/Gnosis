@@ -14,6 +14,7 @@ interface CommandData {
 
 const commands: CommandData[] = [];
 const foldersPath: string = path.join(_dirname, "commands", "utilities");
+console.log(foldersPath, token)
 const commandsPaths: string[] = await getDirs(foldersPath);
 console.log("Command file paths:", commandsPaths);
 

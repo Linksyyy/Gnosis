@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+        import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 export default{
     data: new SlashCommandBuilder()

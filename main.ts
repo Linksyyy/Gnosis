@@ -16,14 +16,13 @@ client.commands = new Collection();
 const commandsPath = path.join(_dirname, "commands", "utilities");
 const commandsFiles = await getDirs(commandsPath);
 
-//command handler
 for (const file of commandsFiles) {
   const filePath = path.join(commandsPath, file);
   const { default: command } = await import(filePath);
 
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command);
-    console.log(`[OK] Carregado o comando ${command.data.name}.js`);
+    console.log(`[OK] Carregado o comando ${command.data.name}.js`); //command handler
   } else {
     console.log(
       `[WARN] O comando em ${filePath} está faltando "data" ou "execute" como propriedade.`,
@@ -44,6 +43,7 @@ for (const file of eventsFiles) {
   } else {
     client.on(event.when, (...args) => event.execute(...args));
   }
+  console.log(`[OK] Carregado o evento ${file}`)
 }
 
 client.login(Deno.env.get("TOKEN"));
