@@ -1,6 +1,6 @@
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 
-const gemini = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_KEY") });
+const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
 export default async function geminiAsk(
   input: string,

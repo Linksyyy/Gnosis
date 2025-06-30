@@ -6,11 +6,13 @@ export default {
     .setName("user")
     .setDescription("Informações do user"),
   async execute(msg: ChatInputCommandInteraction) {
-    const date = new Date(msg.member!.joinedTimestamp);
+    const joinedDate = new Date(msg.member!.joinedTimestamp);
+    const createdDate = new Date(msg.user.createdTimestamp);
     await msg.reply(`>>> Username: ${msg.user.username}
  Id: ${msg.user.id}
  Globalname: ${msg.user.globalName}
- JoinedAt: ${date.toLocaleDateString("pt-BR")}
- Timestamp: ${msg.member!.joinedTimestamp}`);
+ JoinedAt: ${joinedDate.toLocaleDateString("pt-BR")}
+ AccountCreatedAt: ${createdDate.toLocaleDateString("pt-BR")}
+ `);
   },
 } as Command;

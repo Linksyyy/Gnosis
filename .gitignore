@@ -1,4 +1,3 @@
 .env
-drizzle.config.ts
-/commands/utilities/test.ts
-/db
+db
+drizzle*

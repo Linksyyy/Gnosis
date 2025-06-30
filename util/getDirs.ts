@@ -1,7 +1,7 @@
+import { readdir } from "node:fs/promises";
+
 export default async function getDirs(path: string) {
-  const dirs = [];
-  for await (const dirEntry of Deno.readDir(path)) {
-    dirs.push(dirEntry.name);
-  }
+  let dirs: string[] = new Array();
+  dirs = await readdir(path, { recursive: true })
   return dirs;
 }

@@ -6,4 +6,3 @@ export default {
     execute(client: any) {
         console.log(`[OK] Pronto! Logado como  ${client.user.tag}`)
     }
-}

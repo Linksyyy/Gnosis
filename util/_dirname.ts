@@ -1,3 +1,3 @@
-import { dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
+import path from "node:path"
 
-export default dirname(dirname(fromFileUrl(import.meta.url)))
+export default path.dirname(import.meta.dir);

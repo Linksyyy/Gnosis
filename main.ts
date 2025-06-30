@@ -1,11 +1,8 @@
-import { Collection } from "discord.js";
+import { Command } from "./types/Command.ts";
+import { client } from "./client.ts";
 import path from "node:path";
 import _dirname from "./util/_dirname.ts";
 import getDirs from "./util/getDirs.ts";
-import { client } from "./client.ts";
-import { Command } from "./types/Command.ts";
-
-client.commands = new Collection();
 
 const commandsPath = path.join(_dirname, "commands", "utilities");
 const commandsFiles = await getDirs(commandsPath);
@@ -40,4 +37,4 @@ for (const file of eventsFiles) {
   console.log(`[OK] Carregado o evento ${file}`)
 }
 
-client.login(Deno.env.get("TOKEN"));
+client.login(process.env.TOKEN);

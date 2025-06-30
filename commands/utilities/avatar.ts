@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command } from "../../types/Command.ts";
+import CreateAvatarUrl from "../../util/CreateAvatarUrl.ts";
 
 export default {
   data: new SlashCommandBuilder()
@@ -7,7 +8,7 @@ export default {
     .setDescription("Mostra avatar"),
   async execute(msg: ChatInputCommandInteraction) {
     await msg.reply(
-      `https://cdn.discordapp.com/avatars/${msg.user.id}/${msg.user.avatar}.png?size=2048`,
+      CreateAvatarUrl(msg)
     );
   },
 } as Command;

@@ -7,4 +7,3 @@ export default {
     await msg.reply("pong");
   },
 } as Command;
-

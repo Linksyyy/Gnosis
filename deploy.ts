@@ -3,8 +3,8 @@ import path from "node:path";
 import _dirname from "./util/_dirname.ts";
 import getDirs from "./util/getDirs.ts";
 
-const token: string | undefined = Deno.env.get("TOKEN");
-const clientId: string = Deno.env.get("CLIENT_ID") as string;
+const token: string | undefined = process.env.TOKEN;
+const clientId: string = process.env.CLIENT_ID!;
 
 interface CommandData {
   name: string;
