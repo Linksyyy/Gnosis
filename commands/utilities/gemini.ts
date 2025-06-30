@@ -13,6 +13,7 @@ export default {
         .setRequired(true);
       return option;
     }),
+
   async execute(msg: ChatInputCommandInteraction) {
     await msg.deferReply();
 

@@ -1,15 +1,9 @@
-import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { Collection } from "discord.js";
 import path from "node:path";
 import _dirname from "./util/_dirname.ts";
 import getDirs from "./util/getDirs.ts";
-
-interface ExtendedClient extends Client {
-  commands: Collection<string, undefined>;
-}
-
-const client: ExtendedClient = new Client({
-  intents: [GatewayIntentBits.Guilds],
-}) as ExtendedClient;
+import { client } from "./client.ts";
+import { Command } from "./types/Command.ts";
 
 client.commands = new Collection();
 
@@ -21,7 +15,7 @@ for (const file of commandsFiles) {
   const { default: command } = await import(filePath);
 
   if ("data" in command && "execute" in command) {
-    client.commands.set(command.data.name, command);
+    client.commands.set(command.data.name, command as Command);
     console.log(`[OK] Carregado o comando ${command.data.name}.js`); //command handler
   } else {
     console.log(
