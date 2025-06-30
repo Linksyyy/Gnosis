@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Command } from "../../types/Command.ts";
 
 export default {
   data: new SlashCommandBuilder()
@@ -9,4 +10,4 @@ export default {
       `https://cdn.discordapp.com/avatars/${msg.user.id}/${msg.user.avatar}.png?size=2048`,
     );
   },
-};
+} as Command;

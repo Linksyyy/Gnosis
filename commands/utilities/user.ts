@@ -1,4 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Command } from "../../types/Command.ts";
 
 export default {
   data: new SlashCommandBuilder()
@@ -12,4 +13,4 @@ export default {
  JoinedAt: ${date.toLocaleDateString("pt-BR")}
  Timestamp: ${msg.member!.joinedTimestamp}`);
   },
-};
+} as Command;
