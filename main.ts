@@ -1,5 +1,5 @@
-import { Command } from "./types/Command.ts";
-import { client } from "./client.ts";
+import { Command } from "./conf/types/Command.ts";
+import { client } from "./conf/client.ts";
 import path from "node:path";
 import _dirname from "./util/_dirname.ts";
 import getDirs from "./util/getDirs.ts";
@@ -11,9 +11,10 @@ for (const file of commandsFiles) {
   const filePath = path.join(commandsPath, file);
   const { default: command } = await import(filePath);
 
+  //command handler
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command as Command);
-    console.log(`[OK] Carregado o comando ${command.data.name}.js`); //command handler
+    console.log(`[OK] Carregado o comando ${command.data.name}.js`);
   } else {
     console.log(
       `[WARN] O comando em ${filePath} está faltando "data" ou "execute" como propriedade.`,
@@ -22,7 +23,8 @@ for (const file of commandsFiles) {
 }
 
 const eventsPath = path.join(_dirname, "events");
-const eventsFiles = await getDirs(eventsPath);
+const allEventsFiles = await getDirs(eventsPath);
+const eventsFiles = allEventsFiles.filter(file => file.endsWith(".ts"))
 
 //events handler
 for (const file of eventsFiles) {
@@ -34,7 +36,7 @@ for (const file of eventsFiles) {
   } else {
     client.on(event.when, (...args) => event.execute(...args));
   }
-  console.log(`[OK] Carregado o evento ${file}`)
+  console.log(`[OK] Carregado o evento ${file}`);
 }
 
 client.login(process.env.TOKEN);

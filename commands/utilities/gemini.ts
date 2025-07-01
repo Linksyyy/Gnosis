@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import geminiAsk from "../../util/geminiAsk.ts";
 import chainReply from "../../util/chainReply.ts";
-import { Command } from "../../types/Command.ts";
+import { Command } from "../../conf/types/Command.ts";
 
 export default {
   data: new SlashCommandBuilder()
