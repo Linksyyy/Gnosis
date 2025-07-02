@@ -14,7 +14,7 @@ for (const file of commandsFiles) {
   //command handler
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command as Command);
-    console.log(`[OK] Carregado o comando ${command.data.name}.js`);
+    console.log(`[OK] Carregado o comando ${command.data.name}`);
   } else {
     console.log(
       `[WARN] O comando em ${filePath} está faltando "data" ou "execute" como propriedade.`,
