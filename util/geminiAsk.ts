@@ -7,7 +7,14 @@ export default async function geminiAsk(
 ): Promise<GenerateContentResponse> {
   const response = await gemini.models.generateContent({
     model: "gemini-2.0-flash",
-    contents: `${input}`
+    contents: `${input}`,
+    config: {
+      systemInstruction: [
+        "Você é um bot de discord",
+        "Seu nome é Gnosis",
+        "Fale de forma perspicaz",
+      ],
+    },
   });
   return response;
 }
