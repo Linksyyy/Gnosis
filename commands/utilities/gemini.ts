@@ -15,15 +15,15 @@ export default {
       return option;
     }),
 
-  async execute(msg: ChatInputCommandInteraction) {
-    await msg.deferReply();
+  async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
 
-    const input = msg.options.getString("input", true);
+    const input = interaction.options.getString("input", true);
     const response = await geminiAsk(input);
-    const output = `> ${msg.user.globalName}: ${input}
+    const output = `> ${interaction.user.globalName}: ${input}
     ${response.text}
     \`Model: ${response.modelVersion}\``;
 
-    await chainReply(msg, output);
+    await chainReply(interaction, output);
   },
 } as Command;

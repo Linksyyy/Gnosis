@@ -7,6 +7,12 @@ import { ChatInputCommandInteraction, Guild } from "discord.js";
 export async function findById(id: string, table: PgTable) {
     return await db.select().from(table).where(eq(table.id, id));
 }
+export async function isBookRegistred(title: string) {
+    const consult = await db.select().from(booksTable).where(
+        eq(booksTable.title, title),
+    );
+    return consult.length != 0;
+}
 
 export async function isUserRegistred(id: string) {
     const consult = await findById(id, usersTable);
@@ -30,8 +36,11 @@ export async function insertBook(
         file_type: title.match(/[^.]*$/)![0], //take all after dot
         guild_submitter_id: msg.guild?.id,
     };
-
-    await db.insert(booksTable).values(book);
+    try{
+        await db.insert(booksTable).values(book);
+    } catch(e){
+        console.log(e)
+    }
     console.log(`[!] Registrado o livro ${title} no banco de dados`);
 }
 

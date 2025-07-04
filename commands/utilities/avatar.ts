@@ -6,9 +6,9 @@ export default {
   data: new SlashCommandBuilder()
     .setName("avatar")
     .setDescription("Mostra avatar"),
-  async execute(msg: ChatInputCommandInteraction) {
-    await msg.reply(
-      CreateAvatarUrl(msg)
+  async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.reply(
+      CreateAvatarUrl(interaction)
     );
   },
 } as Command;

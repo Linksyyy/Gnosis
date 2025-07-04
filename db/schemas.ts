@@ -25,7 +25,7 @@ export const membersTable = pgTable("members", {
 
 export const booksTable = pgTable("books", {
     id: serial().primaryKey(),
-    title: varchar({ length: 255 }).notNull(),
+    title: varchar({ length: 255 }).unique().notNull(),
     author: varchar({ length: 255 }),
     submitter_id: varchar({ length: 255 }).references(() => usersTable.id)
         .notNull(),
