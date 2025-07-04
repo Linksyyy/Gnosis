@@ -4,11 +4,11 @@ import { insertUser, isUserRegistred } from "../db/queries.ts";
 
 export default {
   when: Events.InteractionCreate,
-  async execute(msg: ChatInputCommandInteraction) {
-    if(!await isUserRegistred(msg.user.id)) {
-      await insertUser(msg)
+  async execute(interaction: ChatInputCommandInteraction) {
+    if(!await isUserRegistred(interaction.user.id)) {
+      await insertUser(interaction)
     }
-    const command = client.commands.get(msg.commandName)!;
-    await command.execute(msg);
+    const command = client.commands.get(interaction.commandName)!;
+    await command.execute(interaction);
   },
 };
