@@ -5,14 +5,15 @@ export default {
   data: new SlashCommandBuilder()
     .setName("user")
     .setDescription("Informações do user"),
-  async execute(interaction: ChatInputCommandInteraction) {
-    const joinedDate = new Date(interaction.member!.joinedTimestamp);
+  async execute(interaction: ChatInputCommandInteraction<"cached">) {
     const createdDate = new Date(interaction.user.createdTimestamp);
+    const joinedDate = new Date(interaction.member.joinedTimestamp!);
+    
     await interaction.reply(`>>> Username: ${interaction.user.username}
- Id: ${interaction.user.id}
- Globalname: ${interaction.user.globalName}
- JoinedAt: ${joinedDate.toLocaleDateString("pt-BR")}
- AccountCreatedAt: ${createdDate.toLocaleDateString("pt-BR")}
+      Id: ${interaction.user.id}
+      Globalname: ${interaction.user.globalName}
+      JoinedAt: ${joinedDate.toLocaleDateString("pt-BR")}
+      AccountCreatedAt: ${createdDate.toLocaleDateString("pt-BR")}
  `);
   },
 } as Command;

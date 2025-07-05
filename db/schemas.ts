@@ -31,5 +31,7 @@ export const booksTable = pgTable("books", {
         .notNull(),
     guild_submitter_id: varchar({ length: 255 }).references(() => guildsTable.id),
     submitted_at: timestamp().defaultNow(),
+    file_name: varchar({ length: 255 }).notNull(),
     file_type: varchar({ length: 255 }).notNull(),
+    file_language: varchar({ length: 255 }),
 });

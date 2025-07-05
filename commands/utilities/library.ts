@@ -10,7 +10,8 @@ import {
 import cdnCurl from "../../util/cdnCurl";
 import path from "node:path";
 import _dirname from "../../util/_dirname";
-import { insertBook } from "../../db/queries";
+import { insertBook, isBookRegistred } from "../../db/queries";
+import librarySearchModal from "../ModalBuilders/librarySearchModal";
 
 const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
 const booksFolder = path.join(_dirname, "books");
@@ -28,27 +29,29 @@ export default {
                     "Here you can search for the book that are you looking for",
                 )
         ),
-    async execute(interaction: ChatInputCommandInteraction) {
+    async execute(interaction: ChatInputCommandInteraction<"cached">) {
         const sub = interaction.options.getSubcommand();
 
         switch (sub) {
-            //########################################################################################################
+            //REGISTER ########################################################################################################
             case "register":
-                await interaction.reply("📂 Por favor, envie o arquivo agora...");
+                await interaction.reply(
+                    "📂 Por favor, envie o arquivo agora...",
+                );
                 const filter = (m: Message) =>
-                    m.author.id === interaction.user.id && m.attachments.size > 0;
+                    m.author.id === interaction.user.id &&
+                    m.attachments.size > 0;
                 const collector = interaction.channel!.createMessageCollector({
                     filter: filter,
                     time: COLLECTOR_TIMEOUT,
                     max: 1,
                 });
 
-                collector.on("collect", (msg: Message) => {
+                collector.on("collect", async (msg: Message) => {
                     const attachment = msg.attachments.first()!;
 
                     //using regex to take the file extension
-                    const attachmentExtension =
-                        attachment.name.match(/[^.]*$/)![0];
+                    const attachmentExtension = attachment.name.match(/[^.]*$/)![0];
 
                     if (!acceptedFileExtensions.includes(attachmentExtension)) {
                         interaction.followUp(
@@ -57,14 +60,24 @@ export default {
                         return;
                     }
 
-                    cdnCurl(attachment.url, booksFolder, attachment.name); //download the attachment
-                    insertBook(interaction, attachment.name);
-
-                    interaction.followUp(
-                        `✅ Arquivo recebido: **${attachment!.name}**\n🔗 ${
-                            attachment!.url
-                        }`,
+                    const bookRegistred = await isBookRegistred(
+                        attachment.name,
                     );
+
+                    if (bookRegistred) {
+                        interaction.followUp(
+                            `❌ Arquivo com título: **${attachment!.name}** já foi resgistrado`,
+                        );
+                        return;
+                    } else {
+                        cdnCurl(attachment.url, booksFolder, attachment.name); //download the attachment
+                        insertBook(interaction, attachment, "teste", "teste");
+
+                        interaction.followUp(
+                            `✅ Arquivo recebido: **${attachment!.name}**\n🔗 ${attachment!.url
+                            }`,
+                        );
+                    }
                 });
 
                 collector.on("end", async (collected) => {
@@ -75,22 +88,9 @@ export default {
                     }
                 });
                 break;
-            //########################################################################################################
+            //SEARCH ########################################################################################################
             case "search":
-                const modal = new ModalBuilder()
-                    .setCustomId("SearchModal")
-                    .setTitle("Search");
-
-                const authorInput = new TextInputBuilder()
-                    .setCustomId("InputAuthor")
-                    .setLabel("What author you're looking for?")
-                    .setStyle(TextInputStyle.Short);
-
-                const firstRow = new ActionRowBuilder().addComponents(
-                    authorInput,
-                );
-                modal.addComponents(firstRow);
-                interaction.showModal(modal);
+                interaction.showModal(librarySearchModal);
                 break;
         }
     },

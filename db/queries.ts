@@ -1,16 +1,25 @@
-import { PgTable } from "drizzle-orm/pg-core";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { booksTable, guildsTable, usersTable } from "./schemas";
-import { ChatInputCommandInteraction, Guild } from "discord.js";
+import { Attachment, ChatInputCommandInteraction, Guild } from "discord.js";
 
-export async function findById(id: string, table: PgTable) {
+export async function findById(
+    id: string,
+    table: typeof usersTable | typeof booksTable | typeof guildsTable,
+) {
     return await db.select().from(table).where(eq(table.id, id));
 }
-export async function isBookRegistred(title: string) {
-    const consult = await db.select().from(booksTable).where(
-        eq(booksTable.title, title),
-    );
+
+export async function isBookRegistred(name: string) {
+    const fileExtension = name.match(/[^.]*$/)![0];
+    const title = name.split(/\.[^.]*$/)[0];
+
+    const consult = await db.select()
+        .from(booksTable)
+        .where(and(
+            eq(booksTable.title, title),
+            eq(booksTable.file_type, fileExtension),
+        ));
     return consult.length != 0;
 }
 
@@ -25,22 +34,24 @@ export async function isGuildRegistred(id: string) {
 }
 
 export async function insertBook(
-    msg: ChatInputCommandInteraction,
+    interaction: ChatInputCommandInteraction,
+    attachment: Attachment,
     title: string,
     author: string | undefined = undefined,
+    language: string | undefined = undefined,
 ) {
     const book: typeof booksTable.$inferInsert = {
-        title: title.split(/\.[^.]*$/)[0], //take all before the last dot
+        title: title, //take all before the last dot
         author: author,
-        submitter_id: msg.user.id,
+        submitter_id: interaction.user.id,
+        file_name: attachment.name,
         file_type: title.match(/[^.]*$/)![0], //take all after dot
-        guild_submitter_id: msg.guild?.id,
+        guild_submitter_id: interaction.guild?.id,
+        file_language: language,
     };
-    try{
+    try {
         await db.insert(booksTable).values(book);
-    } catch(e){
-        console.log(e)
-    }
+    } catch (e) { }
     console.log(`[!] Registrado o livro ${title} no banco de dados`);
 }
 
@@ -55,12 +66,12 @@ export async function insertUser(msg: ChatInputCommandInteraction) {
     console.log(`[!] Registrado o user ${msg.user.username} no banco de dados`);
 }
 
-export async function insertGuild(gld: Guild) {
-    const guild: typeof guildsTable.$inferInsert = {
-        id: gld.id,
-        name: gld.name,
+export async function insertGuild(guild: Guild) {
+    const gld: typeof guildsTable.$inferInsert = {
+        id: guild.id,
+        name: guild.name,
     };
 
-    await db.insert(guildsTable).values(guild);
-    console.log(`[!] Registrado a guild ${gld.name} no banco de dados`);
+    await db.insert(guildsTable).values(gld);
+    console.log(`[!] Registrado a guild ${guild.name} no banco de dados`);
 }
