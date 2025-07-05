@@ -1,17 +1,13 @@
 import {
-    ActionRowBuilder,
     ChatInputCommandInteraction,
     Message,
-    ModalBuilder,
     SlashCommandBuilder,
-    TextInputBuilder,
-    TextInputStyle,
 } from "discord.js";
 import cdnCurl from "../../util/cdnCurl";
 import path from "node:path";
 import _dirname from "../../util/_dirname";
 import { insertBook, isBookRegistred } from "../../db/queries";
-import librarySearchModal from "../ModalBuilders/librarySearchModal";
+import searchModal from "../ModalBuilders/searchModal";
 
 const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
 const booksFolder = path.join(_dirname, "books");
@@ -90,7 +86,7 @@ export default {
                 break;
             //SEARCH ########################################################################################################
             case "search":
-                interaction.showModal(librarySearchModal);
+                interaction.showModal(searchModal);
                 break;
         }
     },
