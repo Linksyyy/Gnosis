@@ -1,4 +1,4 @@
-import { insertBook, insertGuild, isBookRegistered, isGuildRegistered } from "./db/queries.ts";
+import { deleteBookByTitle, findMany, insertBook, insertGuild, isBookRegistered, isGuildRegistered } from "./db/queries.ts";
 import { Command } from "./conf/types/Command.ts";
 import { client } from "./conf/client.ts";
 import path from "node:path";
@@ -52,4 +52,13 @@ books.forEach(async book => {
   const bookRegistered = await isBookRegistered(book)
   if (!bookRegistered) insertBook(book)
 });
+
+//Check if have some book registered that is not downloaded
+const allBooks = await findMany('books')
+allBooks?.forEach(async book => {
+  if(!books.includes(`${book.title}.${book.type}`)) {
+    await deleteBookByTitle(book.title)
+  }
+});
+
 client.login(process.env.TOKEN);

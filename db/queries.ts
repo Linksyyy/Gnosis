@@ -1,13 +1,22 @@
 import { db } from "./db";
 import { and, eq } from "drizzle-orm";
 import { booksTable, guildsTable, usersTable } from "./schemas";
-import { Attachment, ChatInputCommandInteraction, Guild } from "discord.js";
+import { ChatInputCommandInteraction, Guild } from "discord.js";
+import type TableGnosis from "../conf/types/TableGnosis";
 
-export async function findById(
-    id: string,
-    table: typeof usersTable | typeof booksTable | typeof guildsTable,
-) {
+export async function findById(id: string, table: TableGnosis) {
     return await db.select().from(table).where(eq(table.id, id));
+}
+
+export async function findMany(table: string) {
+    switch (table) {
+        case 'users':
+            return db.select().from(usersTable);
+        case 'guilds':
+            return db.select().from(guildsTable);
+        case 'books':
+            return db.select().from(booksTable);
+    }
 }
 
 export async function isBookRegistered(file: string) {
@@ -39,7 +48,7 @@ export async function insertBook(
     guildId: string | undefined = undefined
 ) {
     const book: typeof booksTable.$inferInsert = {
-        title: fileName.split(/\.[^.]*$/)[0],
+        title: fileName.split(/\.[^.]*$/)[0], //take all before dot
         type: fileName.match(/[^.]*$/)![0], //take all after dot
         submitter_id: userId,
         guild_submitter_id: guildId,
@@ -47,7 +56,7 @@ export async function insertBook(
     try {
         await db.insert(booksTable).values(book);
         console.log(`[!] Registrado o livro ${fileName} no banco de dados`);
-    } catch (e) { 
+    } catch (e) {
         console.log(e)
     }
 }
@@ -71,4 +80,9 @@ export async function insertGuild(guild: Guild) {
 
     await db.insert(guildsTable).values(gld);
     console.log(`[!] Registrado a guild ${guild.name} no banco de dados`);
+}
+
+export async function deleteBookByTitle(title: string) {
+    await db.delete(booksTable).where(eq(booksTable.title, title));
+    console.log(`[!] Deletado o livro ${title} da database`)
 }
