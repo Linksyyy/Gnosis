@@ -1,3 +1,2 @@
 .env
 books/*
-util/waitingFor.ts

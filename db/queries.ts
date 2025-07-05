@@ -10,49 +10,46 @@ export async function findById(
     return await db.select().from(table).where(eq(table.id, id));
 }
 
-export async function isBookRegistred(name: string) {
-    const fileExtension = name.match(/[^.]*$/)![0];
-    const title = name.split(/\.[^.]*$/)[0];
+export async function isBookRegistered(file: string) {
+    const fileExtension = file.match(/[^.]*$/)![0];
+    const name = file.split(/\.[^.]*$/)[0];
 
     const consult = await db.select()
         .from(booksTable)
         .where(and(
-            eq(booksTable.title, title),
-            eq(booksTable.file_type, fileExtension),
+            eq(booksTable.title, name),
+            eq(booksTable.type, fileExtension),
         ));
     return consult.length != 0;
 }
 
-export async function isUserRegistred(id: string) {
+export async function isUserRegistered(id: string) {
     const consult = await findById(id, usersTable);
     return consult.length != 0;
 }
 
-export async function isGuildRegistred(id: string) {
+export async function isGuildRegistered(id: string) {
     const consult = await findById(id, guildsTable);
     return consult.length != 0;
 }
 
 export async function insertBook(
-    interaction: ChatInputCommandInteraction,
-    attachment: Attachment,
-    title: string,
-    author: string | undefined = undefined,
-    language: string | undefined = undefined,
+    fileName: string,
+    userId: string | undefined = undefined,
+    guildId: string | undefined = undefined
 ) {
     const book: typeof booksTable.$inferInsert = {
-        title: title, //take all before the last dot
-        author: author,
-        submitter_id: interaction.user.id,
-        file_name: attachment.name,
-        file_type: title.match(/[^.]*$/)![0], //take all after dot
-        guild_submitter_id: interaction.guild?.id,
-        file_language: language,
+        title: fileName.split(/\.[^.]*$/)[0],
+        type: fileName.match(/[^.]*$/)![0], //take all after dot
+        submitter_id: userId,
+        guild_submitter_id: guildId,
     };
     try {
         await db.insert(booksTable).values(book);
-    } catch (e) { }
-    console.log(`[!] Registrado o livro ${title} no banco de dados`);
+        console.log(`[!] Registrado o livro ${fileName} no banco de dados`);
+    } catch (e) { 
+        console.log(e)
+    }
 }
 
 export async function insertUser(msg: ChatInputCommandInteraction) {

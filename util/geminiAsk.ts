@@ -2,7 +2,7 @@ import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 
 const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
 
-export default async function geminiAsk(
+export default async function (
   input: string,
 ): Promise<GenerateContentResponse> {
   const response = await gemini.models.generateContent({

@@ -6,32 +6,28 @@ export const usersTable = pgTable("users", {
     name: varchar({ length: 255 })
         .notNull(),
     username: varchar({ length: 255 })
-        .notNull(),
+        .notNull()
 });
 
 export const guildsTable = pgTable("guilds", {
     id: varchar({ length: 255 }).primaryKey().unique()
         .notNull(),
     name: varchar({ length: 255 })
-        .notNull(),
+        .notNull()
 });
 
 export const membersTable = pgTable("members", {
     user_id: varchar({ length: 255 }).references(() => usersTable.id)
         .notNull(),
     guild_id: varchar({ length: 255 }).references(() => guildsTable.id)
-        .notNull(),
+        .notNull()
 });
 
 export const booksTable = pgTable("books", {
     id: serial().primaryKey(),
-    title: varchar({ length: 255 }).unique().notNull(),
-    author: varchar({ length: 255 }),
-    submitter_id: varchar({ length: 255 }).references(() => usersTable.id)
-        .notNull(),
+    title: varchar({ length: 255 }).notNull(),
+    type: varchar({length: 7}).notNull(),
+    submitter_id: varchar({ length: 255 }).references(() => usersTable.id),
     guild_submitter_id: varchar({ length: 255 }).references(() => guildsTable.id),
-    submitted_at: timestamp().defaultNow(),
-    file_name: varchar({ length: 255 }).notNull(),
-    file_type: varchar({ length: 255 }).notNull(),
-    file_language: varchar({ length: 255 }),
+    submitted_at: timestamp().defaultNow()
 });
