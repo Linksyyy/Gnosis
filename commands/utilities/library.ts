@@ -1,17 +1,20 @@
 import {
+    MappedInteractionTypes,
     ChatInputCommandInteraction,
     Message,
     SlashCommandBuilder,
+    InteractionCallbackResponse,
 } from "discord.js";
 import cdnCurl from "../../util/cdnCurl";
 import path from "node:path";
 import _dirname from "../../util/_dirname";
-import { insertBook, isBookRegistered } from "../../db/queries";
-import searchModal from "../modal_builders/searchModal";
+import { findManyBooks, insertBook, isBookRegistered } from "../../db/queries";
+import { searchTypeSelection } from "../message_builders/searchDisplay";
+import search from "../../util/search";
 
 const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
 const booksFolder = path.join(_dirname, "books");
-const COLLECTOR_TIMEOUT = 30_000;
+const TIMEOUT = 10_000;
 
 export default {
     data: new SlashCommandBuilder().setName("library")
@@ -32,14 +35,14 @@ export default {
             //REGISTER ########################################################################################################
             case "register":
                 await interaction.reply(
-                    "📂 Por favor, envie o arquivo junto com descrições como título, autor, lingua etc...",
+                    "📂 Por favor, envie o arquivo...",
                 );
                 const filter = (m: Message) =>
                     m.author.id === interaction.user.id &&
                     m.attachments.size > 0;
                 const collector = interaction.channel!.createMessageCollector({
                     filter: filter,
-                    time: COLLECTOR_TIMEOUT,
+                    time: TIMEOUT,
                     max: 1,
                 });
 
@@ -72,18 +75,53 @@ export default {
                     );
                 });
 
-                collector.on("end", async (collected) => {
+                collector.on("end", collected => {
                     if (collected.size === 0) {
-                        await interaction.followUp(
+                        interaction.followUp(
                             "⏰ Tempo esgotado. Nenhum arquivo foi enviado.",
                         );
                     }
                 });
-                break;
+                return;
             //SEARCH ########################################################################################################
             case "search":
-                interaction.showModal(searchModal);
-                break;
+                const response = await interaction.reply(searchTypeSelection) as unknown as InteractionCallbackResponse;
+                const collectorFilter = i => i.user.id === interaction.user.id;
+
+                const confirmation = await response.resource!.message!
+                    .awaitMessageComponent({
+                        filter: collectorFilter, time: TIMEOUT
+                    }).catch(() =>
+                        interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.")
+                    ) as MappedInteractionTypes<false>["3"];
+
+                switch (confirmation.values[0]) {
+                    case 'search':
+                        interaction.followUp('Você escolheu pesquisar! me diga o que procuras...')
+                        const collectorFilter = (m: Message) => m.author.id === interaction.user.id
+                        const collector = interaction.channel!.createMessageCollector({
+                            filter: collectorFilter,
+                            time: TIMEOUT,
+                            max: 1
+                        });
+                        collector.on('collect', async (m: Message) => {
+                            const books = await findManyBooks()
+                            const bookstitles = books.map(e => e.title) // !!! NEEDED to put it on cache for tomorrow
+                            const searchMatch = search(m.content, bookstitles).map(e => e.item + '\n\n')
+                            interaction.followUp(searchMatch.toString())
+                        });
+                        collector.on("end", collected => {
+                            if (collected.size === 0) {
+                                interaction.followUp(
+                                    "⏰ Tempo esgotado. Nenhum nome foi enviado.",
+                                );
+                            }
+                        });
+                        break;
+                    case 'all':
+                        break;
+                };
+                return;
         }
     },
 };

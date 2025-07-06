@@ -4,19 +4,29 @@ import { booksTable, guildsTable, usersTable } from "./schemas";
 import { ChatInputCommandInteraction, Guild } from "discord.js";
 import type TableGnosis from "../conf/types/TableGnosis";
 
+function takeTable(table: 'users' | 'guilds' | 'books') {
+    switch (table) {
+        case 'users':
+            return usersTable;
+        case 'guilds':
+            return guildsTable;
+        case 'books':
+            return booksTable;
+        default:
+            return undefined;
+    }
+}
+
 export async function findById(id: string, table: TableGnosis) {
     return await db.select().from(table).where(eq(table.id, id));
 }
 
-export async function findMany(table: string) {
-    switch (table) {
-        case 'users':
-            return db.select().from(usersTable);
-        case 'guilds':
-            return db.select().from(guildsTable);
-        case 'books':
-            return db.select().from(booksTable);
-    }
+export async function findMany(table: 'users' | 'guilds' | 'books') {
+    return db.select().from(takeTable(table)!);
+}
+
+export async function findManyBooks() {
+    return await db.select().from(booksTable)
 }
 
 export async function isBookRegistered(file: string) {
