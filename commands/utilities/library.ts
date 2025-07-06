@@ -87,61 +87,73 @@ export default {
                 return;
             //SEARCH ########################################################################################################
             case "search":
-                const response = await interaction.reply(searchTypeSelection) as unknown as InteractionCallbackResponse;
-                const collectorFilter = i => i.user.id === interaction.user.id;
+                await interaction.reply(searchTypeSelection) as unknown as InteractionCallbackResponse;
+                const collectorFilter = i => i.author.id === interaction.user.id;
+                const confirmationCollector = interaction.channel!.createMessageCollector({
+                    filter: collectorFilter,
+                    time: TIMEOUT,
+                    max: 1
+                })
 
-                const confirmation = await response.resource!.message!
+                confirmationCollector.on('collect', (m: Message) => {
+                    const confirmation = m.content;
+                    m.delete()
+                    /*
+                    = await response.resource!.message!
                     .awaitMessageComponent({
                         filter: collectorFilter, time: TIMEOUT
-                    }).catch(() => {
-                        interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.");
-                    }
-                    ) as MappedInteractionTypes<false>["3"];
-
-                if (confirmation == undefined) return;
-
-                switch (confirmation.values[0]) {
-                    case 'search':
-                        interaction.editReply(searchSelected);
-
-                        const collectorFilter = (m: Message) => m.author.id === interaction.user.id
-                        const collector = interaction.channel!.createMessageCollector({
-                            filter: collectorFilter,
-                            time: TIMEOUT,
-                            max: 1
-                        });
-
-                        collector.on('collect', async (m: Message) => {
-                            m.react('🔍');
-                            const books = await findManyBooks();
-                            const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
-                            const searchMatch = search(m.content, booksTitles);
-                            const searchTitles = searchMatch.map(e => e.item);
-                            const selectedBooks = books //this will take the books from DB that matches with the search
-                                .filter(book => searchTitles.includes(book.title))
-                                .map(book => {//and add propeties score and refIndex of fuse
-                                    const item = searchMatch.find(e => e.item === book.title)!
-                                    return {
-                                        ...book,
-                                        score: item.score!,
-                                        refIndex: item.refIndex
-                                    } as unknown as SearchBooksResult
-                                }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
-                            interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
-                            m.delete()
-                        });
-
-                        collector.on("end", collected => {
-                            if (collected.size === 0) {
-                                interaction.followUp(
-                                    "⏰ Tempo esgotado. Nenhum nome foi enviado.",
-                                );
+                        }).catch(() => {
+                            interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.");
                             }
-                        });
-                        return;
-                    case 'all':
-                        break;
-                };
+                            ) as MappedInteractionTypes<false>["3"];
+                            */
+
+                    if (confirmation == undefined) return;
+
+                    switch (confirmation) {
+                        case '1':
+                            return;
+                        case '2': //search
+                            interaction.editReply(searchSelected);
+
+                            const collectorFilter = (m: Message) => m.author.id === interaction.user.id
+
+                            const collector = interaction.channel!.createMessageCollector({
+                                filter: collectorFilter,
+                                time: TIMEOUT,
+                                max: 1
+                            });
+
+                            collector.on('collect', async (m: Message) => {
+                                m.react('🔍');
+                                const books = await findManyBooks();
+                                const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
+                                const searchMatch = search(m.content, booksTitles);
+                                const searchTitles = searchMatch.map(e => e.item);
+                                const selectedBooks = books //this will take the books from DB that matches with the search
+                                    .filter(book => searchTitles.includes(book.title))
+                                    .map(book => {//and add propeties score and refIndex of fuse
+                                        const item = searchMatch.find(e => e.item === book.title)!
+                                        return {
+                                            ...book,
+                                            score: item.score!,
+                                            refIndex: item.refIndex
+                                        } as unknown as SearchBooksResult
+                                    }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
+                                interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
+                                m.delete()
+                            });
+
+                            collector.on("end", collected => {
+                                if (collected.size === 0) {
+                                    interaction.followUp(
+                                        "⏰ Tempo esgotado. Nenhum nome foi enviado.",
+                                    );
+                                }
+                            });
+                            return;
+                    };
+                })
         }
     },
 };

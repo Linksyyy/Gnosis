@@ -25,6 +25,7 @@ const displaySelection = libraryBuilder()
     .addTextDisplayComponents(textDisplay => textDisplay
         .setContent(`### 🌐 Escolha como deseja pesquisar\n${firstLabel}.\n${secondLabel}.`)
     )
+    /*
     .addActionRowComponents(
         actionRow => actionRow
             .setComponents(
@@ -42,6 +43,7 @@ const displaySelection = libraryBuilder()
                     )
             )
     );
+    */
 
 export const searchTypeSelection = {
     components: [displaySelection],
