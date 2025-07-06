@@ -54,7 +54,7 @@ export default {
                     const attachmentExtension = attachment.name.match(/[^.]*$/)![0];
                     if (!acceptedFileExtensions.includes(attachmentExtension)) {
                         interaction.followUp(
-                            `❌ Anexo enviado não esta entre as extensões aceitas: ${acceptedFileExtensions}`,
+                            `❌ Anexo enviado não esta entre as extensões aceitas: ${acceptedFileExtensions.toString()}`,
                         );
                         return;
                     }
@@ -126,7 +126,7 @@ export default {
                                         score: item.score!,
                                         refIndex: item.refIndex
                                     } as unknown as SearchBooksResult
-                                });
+                                }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
                             interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                             m.delete()
                         });

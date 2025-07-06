@@ -64,7 +64,7 @@ export const searchSelected = {
 export function searchList(booksList: SearchBooksResult[], id: string, search: string) {
     let list: string = `\n`;
     for (let book of booksList) {
-        list += `1. ${book.title}.${book.type}\n`
+        list += `1. ${book.title}.${book.type} -- ${book.refIndex} -- ${book.score}\n`
     }
     const display = libraryBuilder()
 

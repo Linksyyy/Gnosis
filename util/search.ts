@@ -7,6 +7,7 @@ export default function(input : string, array : string[]) {
         ignoreDiacritics: true,
         includeScore: true,
         shouldSort: true,
+        ignoreLocation: true
     })
 
     return fuse.search(input)
