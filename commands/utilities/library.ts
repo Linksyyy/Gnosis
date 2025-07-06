@@ -3,18 +3,19 @@ import {
     ChatInputCommandInteraction,
     Message,
     SlashCommandBuilder,
-    InteractionCallbackResponse,
+    InteractionCallbackResponse
 } from "discord.js";
 import cdnCurl from "../../util/cdnCurl";
 import path from "node:path";
 import _dirname from "../../util/_dirname";
 import { findManyBooks, insertBook, isBookRegistered } from "../../db/queries";
-import { searchTypeSelection } from "../message_builders/searchDisplay";
+import { searchList, searchSelected, searchTypeSelection } from "../message_builders/searchDisplay";
 import search from "../../util/search";
+import SearchBooksResult from "../../conf/types/SearchBooksResult";
 
 const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
 const booksFolder = path.join(_dirname, "books");
-const TIMEOUT = 10_000;
+const TIMEOUT = 30_000;
 
 export default {
     data: new SlashCommandBuilder().setName("library")
@@ -46,8 +47,8 @@ export default {
                     max: 1,
                 });
 
-                collector.on("collect", async (msg: Message) => {
-                    const attachment = msg.attachments.first()!;
+                collector.on("collect", async (m: Message) => {
+                    const attachment = m.attachments.first()!;
 
                     //using regex to take the file extension
                     const attachmentExtension = attachment.name.match(/[^.]*$/)![0];
@@ -70,7 +71,7 @@ export default {
                     cdnCurl(attachment.url, booksFolder, attachment.name); //download the attachment
                     insertBook(attachment.name, interaction.user.id, interaction.guild.id)
 
-                    interaction.followUp(
+                    m.reply(
                         `✅ Arquivo recebido: **${attachment!.name}**\n🔗 ${attachment!.url}`
                     );
                 });
@@ -80,6 +81,7 @@ export default {
                         interaction.followUp(
                             "⏰ Tempo esgotado. Nenhum arquivo foi enviado.",
                         );
+                        return;
                     }
                 });
                 return;
@@ -91,25 +93,44 @@ export default {
                 const confirmation = await response.resource!.message!
                     .awaitMessageComponent({
                         filter: collectorFilter, time: TIMEOUT
-                    }).catch(() =>
-                        interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.")
+                    }).catch(() => {
+                        interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.");
+                    }
                     ) as MappedInteractionTypes<false>["3"];
+
+                if (confirmation == undefined) return;
 
                 switch (confirmation.values[0]) {
                     case 'search':
-                        interaction.followUp('Você escolheu pesquisar! me diga o que procuras...')
+                        interaction.editReply(searchSelected);
+
                         const collectorFilter = (m: Message) => m.author.id === interaction.user.id
                         const collector = interaction.channel!.createMessageCollector({
                             filter: collectorFilter,
                             time: TIMEOUT,
                             max: 1
                         });
+
                         collector.on('collect', async (m: Message) => {
-                            const books = await findManyBooks()
-                            const bookstitles = books.map(e => e.title) // !!! NEEDED to put it on cache for tomorrow
-                            const searchMatch = search(m.content, bookstitles).map(e => e.item + '\n\n')
-                            interaction.followUp(searchMatch.toString())
+                            m.react('🔍');
+                            const books = await findManyBooks();
+                            const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
+                            const searchMatch = search(m.content, booksTitles);
+                            const searchTitles = searchMatch.map(e => e.item);
+                            const selectedBooks = books //this will take the books from DB that matches with the search
+                                .filter(book => searchTitles.includes(book.title))
+                                .map(book => {//and add propeties score and refIndex of fuse
+                                    const item = searchMatch.find(e => e.item === book.title)!
+                                    return {
+                                        ...book,
+                                        score: item.score!,
+                                        refIndex: item.refIndex
+                                    } as unknown as SearchBooksResult
+                                });
+                            interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
+                            m.delete()
                         });
+
                         collector.on("end", collected => {
                             if (collected.size === 0) {
                                 interaction.followUp(
@@ -117,11 +138,10 @@ export default {
                                 );
                             }
                         });
-                        break;
+                        return;
                     case 'all':
                         break;
                 };
-                return;
         }
     },
 };
