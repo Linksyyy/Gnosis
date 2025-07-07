@@ -1,4 +1,3 @@
-import { deleteBookByTitle, findMany, insertBook, insertGuild, isBookRegistered, isGuildRegistered } from "./db/queries.ts";
 import { Command } from "./conf/types/Command.ts";
 import { client } from "./conf/client.ts";
 import path from "node:path";
@@ -39,26 +38,5 @@ for (const file of eventsFiles) {
   }
   console.log(`[OK] Carregado o evento ${file}`);
 }
-
-//Check if have some guild that is not registered on database
-client.guilds.cache.map(async guild => {
-  if (guild && !await isGuildRegistered(guild.id)) await insertGuild(guild)
-})
-
-//Check if have some book downloaded but not registered then, if not, register
-const booksPath = path.join(_dirname, 'books')
-const books = await getDirs(booksPath)
-books.forEach(async book => {
-  const bookRegistered = await isBookRegistered(book)
-  if (!bookRegistered) insertBook(book)
-});
-
-//Check if have some book registered that is not downloaded
-const allBooks = await findMany('books')
-allBooks?.forEach(async book => {
-  if(!books.includes(`${book.title}.${book.type}`)) {
-    await deleteBookByTitle(book.title)
-  }
-});
 
 client.login(process.env.TOKEN);
