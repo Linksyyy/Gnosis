@@ -1,5 +1,4 @@
 import {
-    MappedInteractionTypes,
     ChatInputCommandInteraction,
     Message,
     SlashCommandBuilder,
@@ -10,7 +9,7 @@ import path from "node:path";
 import _dirname from "../../util/_dirname";
 import { findManyBooks, insertBook, isBookRegistered } from "../../db/queries";
 import { searchList, searchSelected, searchTypeSelection } from "../message_builders/searchDisplay";
-import search from "../../util/search";
+import fuzzySearch from "../../util/fuzzySearch";
 import SearchBooksResult from "../../conf/types/SearchBooksResult";
 
 const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
@@ -128,18 +127,19 @@ export default {
                                 m.react('🔍');
                                 const books = await findManyBooks();
                                 const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
-                                const searchMatch = search(m.content, booksTitles);
-                                const searchTitles = searchMatch.map(e => e.item);
-                                const selectedBooks = books //this will take the books from DB that matches with the search
-                                    .filter(book => searchTitles.includes(book.title))
+                                const searchMatches = fuzzySearch(m.content, booksTitles);
+                                const searchTitles = searchMatches.map(e => e.item);
+                                const selectedBooks = books 
+                                    .filter(book => searchTitles.includes(book.title))//this will take the books from DB that matches with the search
                                     .map(book => {//and add propeties score and refIndex of fuse
-                                        const item = searchMatch.find(e => e.item === book.title)!
+                                        const item = searchMatches.find(e => e.item === book.title)!
                                         return {
                                             ...book,
                                             score: item.score!,
                                             refIndex: item.refIndex
                                         } as unknown as SearchBooksResult
                                     }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
+
                                 interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                                 m.delete()
                             });
