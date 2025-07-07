@@ -1,14 +1,16 @@
 import {
     ContainerBuilder,
+    FileBuilder,
     inlineCode,
     InteractionEditReplyOptions,
     InteractionReplyOptions,
     MessageFlags,
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder,
+    MessageReplyOptions,
     userMention
 } from "discord.js";
 import SearchBooksResult from "../../conf/types/SearchBooksResult";
+import _dirname from "../../util/_dirname";
+import path from "node:path";
 // Library preset ####################################
 const libraryBuilder = () => new ContainerBuilder()
     .setAccentColor(0x402d00)
@@ -85,4 +87,19 @@ export function searchList(booksList: SearchBooksResult[], id: string, search: s
         components: [display],
         flags: MessageFlags.IsComponentsV2
     } as InteractionEditReplyOptions;
+}
+
+// File sender ####################################
+export function fileSend(book: SearchBooksResult) {
+    const fileName = `${book.title}.${book.type}`;
+    const filePath = path.join(_dirname, 'books', fileName);
+
+    const fileSend = new FileBuilder()
+        .setURL(`attachment://${fileName}`)
+    
+    return {
+        components: [fileSend],
+        files:[filePath],
+        flags: MessageFlags.IsComponentsV2
+    } as MessageReplyOptions
 }

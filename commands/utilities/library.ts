@@ -8,7 +8,7 @@ import cdnCurl from "../../util/cdnCurl";
 import path from "node:path";
 import _dirname from "../../util/_dirname";
 import { findManyBooks, insertBook, isBookRegistered } from "../../db/queries";
-import { searchList, searchSelected, searchTypeSelection } from "../message_builders/searchDisplay";
+import { fileSend, searchList, searchSelected, searchTypeSelection } from "../message_builders/searchDisplay";
 import fuzzySearch from "../../util/fuzzySearch";
 import SearchBooksResult from "../../conf/types/SearchBooksResult";
 
@@ -87,7 +87,10 @@ export default {
             //SEARCH ########################################################################################################
             case "search":
                 await interaction.reply(searchTypeSelection) as unknown as InteractionCallbackResponse;
-                const collectorFilter = i => i.author.id === interaction.user.id;
+                const collectorFilter = (m: Message) => (
+                    m.author.id === interaction.user.id &&
+                    (m.content == '1' || m.content == '2')
+                );
                 const confirmationCollector = interaction.channel!.createMessageCollector({
                     filter: collectorFilter,
                     time: TIMEOUT,
@@ -115,7 +118,7 @@ export default {
                         case '2': //search
                             interaction.editReply(searchSelected);
 
-                            const collectorFilter = (m: Message) => m.author.id === interaction.user.id
+                            const collectorFilter = (m: Message) => (m.author.id === interaction.user.id)
 
                             const collector = interaction.channel!.createMessageCollector({
                                 filter: collectorFilter,
@@ -123,13 +126,13 @@ export default {
                                 max: 1
                             });
 
+                            let selectedBooks;
                             collector.on('collect', async (m: Message) => {
-                                m.react('🔍');
                                 const books = await findManyBooks();
                                 const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
                                 const searchMatches = fuzzySearch(m.content, booksTitles);
                                 const searchTitles = searchMatches.map(e => e.item);
-                                const selectedBooks = books 
+                                selectedBooks = books
                                     .filter(book => searchTitles.includes(book.title))//this will take the books from DB that matches with the search
                                     .map(book => {//and add propeties score and refIndex of fuse
                                         const item = searchMatches.find(e => e.item === book.title)!
@@ -143,6 +146,17 @@ export default {
                                 interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                                 m.delete()
                             });
+                            const selectBookColletor = interaction.channel!.createMessageCollector({
+                                filter: collectorFilter,
+                                time: TIMEOUT
+                            })
+
+                            selectBookColletor.on('collect', (m: Message) => {
+                                m.react('🔍');
+                                if (!(typeof m.content === 'string' && /^[0-9]+$/.test(m.content))) return;
+                                const choosedBook = selectedBooks[Number(m.content.trim()) - 1]
+                                m.reply(fileSend(choosedBook))
+                            })
 
                             collector.on("end", collected => {
                                 if (collected.size === 0) {
