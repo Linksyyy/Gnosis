@@ -145,26 +145,28 @@ export default {
 
                                 interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                                 m.delete()
-                            });
-                            const selectBookColletor = interaction.channel!.createMessageCollector({
-                                filter: collectorFilter,
-                                time: TIMEOUT
-                            })
 
-                            selectBookColletor.on('collect', (m: Message) => {
-                                m.react('🔍');
-                                if (!(typeof m.content === 'string' && /^[0-9]+$/.test(m.content))) return;
-                                const choosedBook = selectedBooks[Number(m.content.trim()) - 1]
-                                m.reply(fileSend(choosedBook))
-                            })
+                                const selectBookColletor = interaction.channel!.createMessageCollector({
+                                    filter: collectorFilter,
+                                    time: TIMEOUT,
+                                    max: 1
+                                })
+
+                                selectBookColletor.on('collect', (m: Message) => {
+                                    m.react('🔍');
+                                    if (!(typeof m.content === 'string' && /^[1-9]+$/.test(m.content))) return;
+                                    const choosedBook = selectedBooks[Number(m.content.trim()) - 1]
+                                    m.reply(fileSend(choosedBook))
+                                    return;
+                                })
+                            });
 
                             collector.on("end", collected => {
-                                if (collected.size === 0) {
-                                    interaction.followUp(
-                                        "⏰ Tempo esgotado. Nenhum nome foi enviado.",
-                                    );
-                                }
+                                if (collected.size === 0) interaction.followUp(
+                                    "⏰ Tempo esgotado. Nenhum nome foi enviado.",
+                                );
                             });
+
                             return;
                     };
                 })
