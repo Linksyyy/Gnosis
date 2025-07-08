@@ -7,11 +7,12 @@ import getDirs from "./util/getDirs.ts";
 const commandsPath = path.join(_dirname, "commands", "utilities");
 const commandsFiles = await getDirs(commandsPath);
 
+//command handler
 for (const file of commandsFiles) {
   const filePath = path.join(commandsPath, file);
   const { default: command } = await import(filePath);
 
-  //command handler
+  if(path.parse(filePath).base.startsWith('sub-')) break; // to all files started with 'sub-'(convention to subcommands) will be ignored
   if ("data" in command && "execute" in command) {
     client.commands.set(command.data.name, command as Command);
     console.log(`[OK] Carregado o comando ${command.data.name}`);
