@@ -44,7 +44,9 @@ export default async function search(
         switch (confirmation) {
             case '1':
                 const books = await findManyBooks() as unknown as SearchBooksResult[];
-                interaction.editReply(searchList(books, interaction.user.id));
+                const sortedBooks = books.sort((a,b) => 
+                    String(a.title).localeCompare(String(b.title)))
+                interaction.editReply(searchList(sortedBooks, interaction.user.id));
 
                 const choose1Collector = interaction.channel!.createMessageCollector({
                     filter: filterBase,
@@ -52,7 +54,8 @@ export default async function search(
                     max: 1
                 })
                 choose1Collector.on('collect', (m: Message) => {
-                    m.reply(fileSend(books[Number(m.content.trim()) - 1]))
+                    m.react('🔍')
+                    m.reply(fileSend(sortedBooks[Number(m.content.trim()) - 1]))
                 })
 
                 return;
