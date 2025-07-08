@@ -27,25 +27,25 @@ const displaySelection = libraryBuilder()
     .addTextDisplayComponents(textDisplay => textDisplay
         .setContent(`### 🌐 Escolha como deseja pesquisar\n${firstLabel}.\n${secondLabel}.`)
     )
-    /*
-    .addActionRowComponents(
-        actionRow => actionRow
-            .setComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('selection')
-                    .setPlaceholder('Escolha')
-                    .addOptions(
-                        new StringSelectMenuOptionBuilder()
-                            .setLabel(firstLabel)
-                            .setValue('all'),
+/*
+.addActionRowComponents(
+    actionRow => actionRow
+        .setComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId('selection')
+                .setPlaceholder('Escolha')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel(firstLabel)
+                        .setValue('all'),
 
-                        new StringSelectMenuOptionBuilder()
-                            .setLabel(secondLabel)
-                            .setValue('search')
-                    )
-            )
-    );
-    */
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel(secondLabel)
+                        .setValue('search')
+                )
+        )
+);
+*/
 
 export const searchTypeSelection = {
     components: [displaySelection],
@@ -65,16 +65,14 @@ export const searchSelected = {
 } as unknown as InteractionEditReplyOptions
 
 // Search selected part 2 (showing) ####################################
-export function searchList(booksList: SearchBooksResult[], id: string, search: string) {
+export function searchList(booksList: SearchBooksResult[], id: string, search?: string) {
     let list: string = `\n`;
     for (let book of booksList) {
         list += `1. ${book.title}.${book.type}\n`
     }
     const display = libraryBuilder()
-
-    display.addTextDisplayComponents(textDisplay => textDisplay
-        .setContent(`🔍 ${inlineCode(search)}\n**${userMention(id)} aqui está o resultado da sua pesquisa:**`)
-    )
+    if (search != undefined) display.addTextDisplayComponents(textDisplay => textDisplay
+        .setContent(`🔍 ${inlineCode(search)}\n**${userMention(id)} aqui está o resultado da sua pesquisa:**`))
         .addSeparatorComponents(separator => separator)
     if (booksList.length > 0) display
         .addTextDisplayComponents(textDisplay => textDisplay.setContent(list));
@@ -82,6 +80,7 @@ export function searchList(booksList: SearchBooksResult[], id: string, search: s
         .addTextDisplayComponents(textDisplay => textDisplay
             .setContent('❌ Não foi encontrado nenhum título registrado.')
         )
+    display.addSeparatorComponents(separator => separator)
 
     return {
         components: [display],
@@ -96,10 +95,10 @@ export function fileSend(book: SearchBooksResult) {
 
     const fileSend = new FileBuilder()
         .setURL(`attachment://${fileName}`)
-    
+
     return {
         components: [fileSend],
-        files:[filePath],
+        files: [filePath],
         flags: MessageFlags.IsComponentsV2
     } as MessageReplyOptions
 }

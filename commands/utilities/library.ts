@@ -16,6 +16,7 @@ const acceptedFileExtensions: string[] = ["pdf", "mobi", "epub"];
 const booksFolder = path.join(_dirname, "books");
 const TIMEOUT = 30_000;
 
+
 export default {
     data: new SlashCommandBuilder().setName("library")
         .setDescription("Acess to the community library")
@@ -29,6 +30,14 @@ export default {
                 )
         ),
     async execute(interaction: ChatInputCommandInteraction<"cached">) {
+        const filterBase = (m: Message) => (m.author.id === interaction.user.id);
+        const filterOnlyNumbers = (m: Message) =>
+            m.author.id === interaction.user.id &&
+            typeof Number(m.content.trim()) == "number"
+        const filterWithAttachment = (m: Message) =>
+            m.author.id === interaction.user.id &&
+            m.attachments.size > 0;
+
         const sub = interaction.options.getSubcommand();
 
         switch (sub) {
@@ -37,11 +46,8 @@ export default {
                 await interaction.reply(
                     "📂 Por favor, envie o arquivo...",
                 );
-                const filter = (m: Message) =>
-                    m.author.id === interaction.user.id &&
-                    m.attachments.size > 0;
                 const collector = interaction.channel!.createMessageCollector({
-                    filter: filter,
+                    filter: filterWithAttachment,
                     time: TIMEOUT,
                     max: 1,
                 });
@@ -87,47 +93,49 @@ export default {
             //SEARCH ########################################################################################################
             case "search":
                 await interaction.reply(searchTypeSelection) as unknown as InteractionCallbackResponse;
-                const collectorFilter = (m: Message) => (
+                const chooseFilter = (m: Message) => (
                     m.author.id === interaction.user.id &&
                     (m.content == '1' || m.content == '2')
                 );
                 const confirmationCollector = interaction.channel!.createMessageCollector({
-                    filter: collectorFilter,
+                    filter: chooseFilter,
                     time: TIMEOUT,
                     max: 1
                 })
 
-                confirmationCollector.on('collect', (m: Message) => {
+                confirmationCollector.on('collect', async (m: Message) => {
                     const confirmation = m.content;
                     m.delete()
-                    /*
-                    = await response.resource!.message!
-                    .awaitMessageComponent({
-                        filter: collectorFilter, time: TIMEOUT
-                        }).catch(() => {
-                            interaction.followUp("⏰ Tempo esgotado. Nenhuma opção selecionada.");
-                            }
-                            ) as MappedInteractionTypes<false>["3"];
-                            */
 
                     if (confirmation == undefined) return;
 
                     switch (confirmation) {
                         case '1':
+                            const books = await findManyBooks() as unknown as SearchBooksResult[];
+                            interaction.editReply(searchList(books, interaction.user.id));
+
+                            const choose1Collector = interaction.channel!.createMessageCollector({
+                                filter: filterBase,
+                                time: TIMEOUT,
+                                max: 1
+                            })
+                            choose1Collector.on('collect', (m: Message) => {
+                                m.reply(fileSend(books[Number(m.content.trim()) - 1]))
+                            })
+
                             return;
+
                         case '2': //search
                             interaction.editReply(searchSelected);
 
-                            const collectorFilter = (m: Message) => (m.author.id === interaction.user.id)
-
-                            const collector = interaction.channel!.createMessageCollector({
-                                filter: collectorFilter,
+                            const choose2Collector = interaction.channel!.createMessageCollector({
+                                filter: filterBase,
                                 time: TIMEOUT,
                                 max: 1
                             });
 
-                            let selectedBooks;
-                            collector.on('collect', async (m: Message) => {
+                            let selectedBooks: any;
+                            choose2Collector.on('collect', async (m: Message) => {
                                 const books = await findManyBooks();
                                 const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
                                 const searchMatches = fuzzySearch(m.content, booksTitles);
@@ -140,28 +148,27 @@ export default {
                                             ...book,
                                             score: item.score!,
                                             refIndex: item.refIndex
-                                        } as unknown as SearchBooksResult
+                                        };
                                     }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
 
                                 interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                                 m.delete()
 
                                 const selectBookColletor = interaction.channel!.createMessageCollector({
-                                    filter: collectorFilter,
+                                    filter: filterOnlyNumbers,
                                     time: TIMEOUT,
                                     max: 1
                                 })
 
                                 selectBookColletor.on('collect', (m: Message) => {
-                                    m.react('🔍');
-                                    if (!(typeof m.content === 'string' && /^[1-9]+$/.test(m.content))) return;
                                     const choosedBook = selectedBooks[Number(m.content.trim()) - 1]
-                                    m.reply(fileSend(choosedBook))
+                                    if (choosedBook != undefined)
+                                        m.reply(fileSend(choosedBook))
                                     return;
                                 })
                             });
 
-                            collector.on("end", collected => {
+                            choose2Collector.on("end", collected => {
                                 if (collected.size === 0) interaction.followUp(
                                     "⏰ Tempo esgotado. Nenhum nome foi enviado.",
                                 );
