@@ -1,12 +1,10 @@
 import Fuse, { IFuseOptions } from "fuse.js";
 
 const DEFAULT_FUSE_CONFIG: IFuseOptions<string> = {
-    minMatchCharLength: 4,
     findAllMatches: true,
     ignoreDiacritics: true,
     includeScore: true,
     shouldSort: true,
-    ignoreLocation: true,
     ignoreFieldNorm: true
 }
 

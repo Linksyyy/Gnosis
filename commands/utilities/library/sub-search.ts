@@ -44,7 +44,7 @@ export default async function search(
         switch (confirmation) {
             case '1':
                 const books = await findManyBooks() as unknown as SearchBooksResult[];
-                const sortedBooks = books.sort((a,b) => 
+                const sortedBooks = books.sort((a, b) =>
                     String(a.title).localeCompare(String(b.title)))
                 interaction.editReply(searchList(sortedBooks, interaction.user.id));
 
@@ -97,8 +97,10 @@ export default async function search(
 
                     selectBookColletor.on('collect', (m: Message) => {
                         const choosedBook = selectedBooks[Number(m.content.trim()) - 1]
-                        if (choosedBook != undefined)
+                        if (choosedBook != undefined) {
+                            m.react('🔍')
                             m.reply(fileSend(choosedBook))
+                        } else m.react('❌')
                         return;
                     })
                 });

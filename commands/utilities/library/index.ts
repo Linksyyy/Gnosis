@@ -18,16 +18,15 @@ export default {
                     "Here you can search for the book that are you looking for",
                 )
         ),
+	
     async execute(interaction: ChatInputCommandInteraction<'cached'>) {
-
         const sub = interaction.options.getSubcommand();
-
         switch (sub) {
             case 'register':
-                await register(interaction, TIMEOUT);
+                register(interaction, TIMEOUT);
                 break;
             case 'search':
-                await search(interaction, TIMEOUT)
+                search(interaction, TIMEOUT)
                 break;
         }
     }
