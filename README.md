@@ -3,7 +3,6 @@
 
 # Gnosis
 
-[![Discord](https://img.shields.io/discord/&style=for-the-badge)](https://discord.com/users/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](/LICENSE)
 
 Gnosis is a Discord bot that integrates with the Google Gemini API, providing users with AI-powered search and chat capabilities. It also includes features for managing a local library of books.
