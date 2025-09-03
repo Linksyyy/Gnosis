@@ -69,22 +69,10 @@ export default async function search(
                     max: 1
                 });
 
-                let selectedBooks: any;
                 choose2Collector.on('collect', async (m: Message) => {
                     const books = await findManyBooks();
-                    const booksTitles = books.map(e => e.title); // !!! NEEDED to put it in cache for yesterday
-                    const searchMatches = fuzzySearch(m.content, booksTitles);
-                    const searchTitles = searchMatches.map(e => e.item);
-                    selectedBooks = books
-                        .filter(book => searchTitles.includes(book.title))//this will take the books from DB that matches with the search
-                        .map(book => {//and add propeties score and refIndex of fuse
-                            const item = searchMatches.find(e => e.item === book.title)!
-                            return {
-                                ...book,
-                                score: item.score!,
-                                refIndex: item.refIndex
-                            };
-                        }).sort((x, y) => x.score - y.score); //sort by score, it means, relevance relative to the user search input
+                    const searchMatches = fuzzySearch(m.content, books, {keys: ['title']});
+                    const selectedBooks = searchMatches.map(e => e.item as any);
 
                     interaction.editReply(searchList(selectedBooks, interaction.user.id, m.content))
                     m.delete()
