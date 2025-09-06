@@ -1,3 +1,4 @@
 .env
 books/*
 node_modules
+bun.lock
