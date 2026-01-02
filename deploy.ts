@@ -18,19 +18,36 @@ console.log(foldersPath, token)
 const commandsPaths: string[] = await getDirs(foldersPath);
 console.log("Command file paths:", commandsPaths);
 
-for (const file of commandsPaths) {
-  const filePath: string = path.join(foldersPath, file);
+const commandFiles: string[] = [];
+const dirsWithIndex = new Set<string>();
 
-  if(!file.endsWith(".ts")) continue;
+for (const file of commandsPaths) {
+    if (file.endsWith('/index.ts') || file.endsWith('\\index.ts')) {
+        dirsWithIndex.add(path.dirname(file));
+    }
+}
+
+for (const file of commandsPaths) {
+    if (!file.endsWith('.ts')) continue;
+
+    const dir = path.dirname(file);
+    if (dirsWithIndex.has(dir) && !file.endsWith('index.ts')) {
+        continue;
+    }
+    commandFiles.push(file);
+}
+
+for (const file of commandFiles) {
+  const filePath: string = path.join(foldersPath, file);
 
   try {
     const commandModule = await import(filePath);
     const command = commandModule.default;
-    if (!command.data) {
-      console.warn(`[!] Module in file ${filePath} does not export 'data'.`);
+    if (!command || !command.data) {
+      console.warn(`[!] Module in file ${filePath} does not correctly export 'default' or 'data'.`);
       continue;
     }
-    commands.push(command.data as CommandData);
+    commands.push(command.data.toJSON());
   } catch (error) {
     console.error(`[!] Problem on command: ${file} \n`, error);
   }
@@ -43,13 +60,13 @@ if (!token || !clientId) {
 const rest = new REST().setToken(token);
 //console.log({ body: commands });
 async function deploy(): Promise<void> {
-  console.log(`Carregando ${commands.length} Slash commands.`);
+  console.log(`Loaded ${commands.length} Slash commands.`);
   const data = await rest.put(
     Routes.applicationCommands(clientId),
     { body: commands },
   ) as any[];
 
-  console.log(`Carregado ${data.length} Slash commands com sucesso.`);
+  console.log(`Loaded ${data.length} Slash commands sucessfully.`);
 }
 
 deploy();
